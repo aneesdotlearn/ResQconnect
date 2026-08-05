@@ -45,7 +45,7 @@ function StatCard({ icon: Icon, label, value, color = 'accent', sub, loading }) 
   return (
     <div className="card flex items-start gap-4">
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${colors[color]}`}>
-        <Icon size={22} />
+        <Icon size={22} strokeWidth={2.2} />
       </div>
       <div className="min-w-0">
         {loading
@@ -89,7 +89,7 @@ function RiskMeter({ score, confidence, factors, modelName, loading }) {
         <>
           <div className="flex flex-col items-center">
             <svg viewBox="0 0 120 70" className="w-44">
-              <path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke="#e5e5e5" strokeWidth="12" strokeLinecap="round" />
+              <path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke="#FFD9E9" strokeWidth="12" strokeLinecap="round" />
               <path
                 d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke={color}
                 strokeWidth="12" strokeLinecap="round"
@@ -98,13 +98,52 @@ function RiskMeter({ score, confidence, factors, modelName, loading }) {
               />
               <line x1="60" y1="60" x2="60" y2="20"
                 transform={`rotate(${angle}, 60, 60)`}
-                stroke="#111827" strokeWidth="2" strokeLinecap="round"
+                stroke="#F20C63" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.8s ease' }}
               />
-              <circle cx="60" cy="60" r="4" fill="#111827" />
+              <circle cx="60" cy="60" r="4" fill="#F20C63" />
             </svg>
-            <p className="text-4xl font-display font-black mt-1" style={{ color }}>{safeScore}</p>
-            <span className="badge mt-1 text-xs font-semibold" style={{ background: bg, color, border: `1px solid ${border}` }}>
+            <p
+              className="text-5xl font-display font-black mt-2"
+              style={{
+                color:
+                  safeScore >= 80
+                    ? "#EF4444"
+                    : safeScore >= 60
+                    ? "#F59E0B"
+                    : safeScore >= 40
+                    ? "#FD2264"
+                    : "#10B981"
+              }}
+            >{safeScore}</p>
+            <span className="badge mt-1 text-xs font-semibold" style={{
+                  background:
+                      safeScore >= 80
+                          ? "#FEF2F2"
+                          : safeScore >= 60
+                          ? "#FFF7ED"
+                          : safeScore >= 40
+                          ? "#FFF1F7"
+                          : "#ECFDF5",
+
+                  color:
+                      safeScore >= 80
+                          ? "#EF4444"
+                          : safeScore >= 60
+                          ? "#F59E0B"
+                          : safeScore >= 40
+                          ? "#F20C63"
+                          : "#10B981",
+
+                  border:
+                      safeScore >= 80
+                          ? "1px solid #FECACA"
+                          : safeScore >= 60
+                          ? "1px solid #FED7AA"
+                          : safeScore >= 40
+                          ? "1px solid #FFD9E9"
+                          : "1px solid #A7F3D0"
+              }}>
               {label} Risk
             </span>
           </div>
@@ -174,10 +213,10 @@ function ErrorBanner({ message, onRetry }) {
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
 const QUICK_ACTIONS = [
-  { to: '/sos',       icon: AlertTriangle, label: 'Trigger SOS',  color: 'bg-error-500 hover:bg-error-600 text-white' },
-  { to: '/contacts',  icon: Users,         label: 'Contacts',     color: 'bg-blue-50 hover:bg-blue-100 text-blue-700' },
-  { to: '/zones',     icon: Shield,        label: 'Safe Zones',   color: 'bg-green-50 hover:bg-green-100 text-success-500' },
-  { to: '/incidents', icon: FileText,      label: 'Report',       color: 'bg-orange-50 hover:bg-orange-100 text-warn-500' },
+  { to: '/sos',       icon: AlertTriangle, label: 'Trigger SOS',  color: 'bg-accent-500 hover:bg-accent-600 text-white shadow-lg shadow-accent-500/30' },
+  { to: '/contacts',  icon: Users,         label: 'Contacts',     color: 'bg-blue-100 hover:bg-blue-200 text-blue-700' },
+  { to: '/zones',     icon: Shield,        label: 'Safe Zones',   color: 'bg-green-100 hover:bg-green-200 text-success-500' },
+  { to: '/incidents', icon: FileText,      label: 'Report',       color: 'bg-orange-100 hover:bg-orange-200 text-warn-500' },
 ];
 
 const STATUS_DOT   = { active: 'bg-error-500 animate-pulse', resolved: 'bg-success-500', false_alarm: 'bg-warn-500' };
@@ -233,8 +272,40 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="
+      relative
+      min-h-screen
+      overflow-hidden
+      space-y-8
+      p-8
 
+      bg-gradient-to-br
+      from-accent-50
+      via-base
+      to-accent-100
+      ">
+            <div className="
+    absolute inset-0
+
+    bg-[radial-gradient(circle_at_20%_20%,rgba(242,12,99,.15),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,123,176,.18),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(255,217,233,.5),transparent_15%)]
+    " />
+
+          {/* <div className="
+          absolute
+          bottom-0
+          right-0
+
+          w-[500px]
+          h-[500px]
+
+          rounded-full
+
+          bg-accent-500/10
+
+          blur-[140px]
+          "/> */}
+       
+          
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display font-bold text-2xl text-charcoal">
@@ -253,7 +324,7 @@ export default function DashboardPage() {
           <button
             onClick={() => { fetchAnalytics(); fetchRecentSOS(); }}
             disabled={analyticsLoad || sosLoad}
-            className="p-2 rounded-xl hover:bg-base text-charcoal/50 transition-colors disabled:opacity-40"
+            className="p-2 rounded-xl hover:bg-white/55 backdrop-blur-lg border border-white/70 text-charcoal/50 transition-colors disabled:opacity-40"
             title="Refresh dashboard"
           >
             <RefreshCw size={16} className={(analyticsLoad || sosLoad) ? 'animate-spin' : ''} />
@@ -265,7 +336,7 @@ export default function DashboardPage() {
         {QUICK_ACTIONS.map(({ to, icon: Icon, label, color }) => (
           <Link key={to} to={to}
             className={`flex flex-col items-center gap-2 p-4 rounded-2xl font-semibold text-sm transition-all duration-150 shadow-sm ${color}`}>
-            <Icon size={22} />{label}
+            <Icon size={22} strokeWidth={2.2} />{label}
           </Link>
         ))}
       </div>
@@ -276,9 +347,9 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={AlertTriangle} label="Total SOS"      value={totalSOS}  color="accent" loading={analyticsLoad} />
-        <StatCard icon={Activity}      label="Resolved"       value={resolved}  color="green"  loading={analyticsLoad} />
-        <StatCard icon={FileText}      label="Incidents"      value={incidents} color="orange" loading={analyticsLoad} />
-        <StatCard icon={TrendingUp}    label="Avg Risk Score" value={avgRisk}   color="blue"   loading={analyticsLoad} sub="Across all SOS alerts" />
+        <StatCard icon={Activity}      label="Resolved"       value={resolved}  color="accent"  loading={analyticsLoad} />
+        <StatCard icon={FileText}      label="Incidents"      value={incidents} color="accent" loading={analyticsLoad} />
+        <StatCard icon={TrendingUp}    label="Avg Risk Score" value={avgRisk}   color="accent"   loading={analyticsLoad} sub="Across all SOS alerts" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -291,7 +362,17 @@ export default function DashboardPage() {
           loading={analyticsLoad || sosLoad}
         />
 
-        <div className="lg:col-span-2 card">
+        <div className="lg:col-span-2 card 
+          backdrop-blur-2xl
+          border
+          border-white/70
+          shadow-[0_8px_32px_rgba(242,12,99,.08)]
+          transition-all
+          duration-300
+          hover:-translate-y-1
+          hover:shadow-[0_20px_50px_rgba(242,12,99,.15)]">
+
+            <div className="absolute top-0 left-0 h-20 w-full rounded-t-[30px] bg-gradient-to-b from-white/40 to-transparent pointer-events-none"/>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-semibold text-charcoal">Recent SOS History</h3>
             <Link to="/sos" className="text-xs text-accent-500 font-medium hover:text-accent-600">View all →</Link>
@@ -317,7 +398,7 @@ export default function DashboardPage() {
               {recentSOS.map((sos) => {
                 const { text: riskColor, bg: riskBg } = getRiskColor(sos.aiRiskScore ?? 0);
                 return (
-                  <div key={sos._id} className="flex items-center gap-3 p-3 bg-base rounded-xl">
+                  <div key={sos._id} className="flex items-center gap-3 p-3 bg-white/55 backdrop-blur-lg border border-white/70 rounded-xl">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[sos.status] || 'bg-neutral-400'}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-charcoal/90 capitalize">{sos.triggerMethod || 'unknown'} trigger</p>

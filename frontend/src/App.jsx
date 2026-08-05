@@ -12,7 +12,7 @@ const RegisterPage = lazy(() => import('@/features/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
-// const SOSPage = lazy(() => import('@/features/sos/SOSPage'));
+const SOSPage = lazy(() => import('@/features/sos/SOSPage'));
 // const TrackingPage = lazy(() => import('@/features/tracking/TrackingPage'));
 // const ContactsPage = lazy(() => import('@/features/contacts/ContactsPage'));
 // const IncidentsPage = lazy(() => import('@/features/incidents/IncidentsPage'));
@@ -62,6 +62,7 @@ export default function App() {
         
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/sos" element={<SOSPage />} />
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
