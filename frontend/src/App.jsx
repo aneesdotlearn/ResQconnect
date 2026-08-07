@@ -7,20 +7,21 @@ import PublicRoute from '@/components/auth/PublicRoute';
 import AppLayout from '@/components/layout/AppLayout';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
-const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
-const RegisterPage = lazy(() => import('@/features/auth/RegisterPage'));
+const LoginPage          = lazy(() => import('@/features/auth/LoginPage'));
+const RegisterPage       = lazy(() => import('@/features/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
-const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
-const SOSPage = lazy(() => import('@/features/sos/SOSPage'));
-// const TrackingPage = lazy(() => import('@/features/tracking/TrackingPage'));
-// const ContactsPage = lazy(() => import('@/features/contacts/ContactsPage'));
-// const IncidentsPage = lazy(() => import('@/features/incidents/IncidentsPage'));
-// const ZonesPage = lazy(() => import('@/features/zones/ZonesPage'));
-// const SubscriptionPage = lazy(() => import('@/features/subscription/SubscriptionPage'));
-// const AnalyticsPage = lazy(() => import('@/features/analytics/AnalyticsPage'));
-// const NotificationsPage = lazy(() => import('@/features/notifications/NotificationsPage'));
-// const TrackSOSPage = lazy(() => import('@/features/sos/TrackSOSPage'));
+const ResetPasswordPage  = lazy(() => import('@/features/auth/ResetPasswordPage'));
+const DashboardPage      = lazy(() => import('@/features/dashboard/DashboardPage'));
+const SOSPage            = lazy(() => import('@/features/sos/SOSPage'));
+const TrackSOSPage       = lazy(() => import('@/features/sos/TrackSOSPage'));
+const ContactsPage       = lazy(() => import('@/features/contacts/ContactsPage'));
+const TrackingPage       = lazy(() => import('@/features/tracking/TrackingPage'));
+const ZonesPage          = lazy(() => import('@/features/zones/ZonesPage'));
+const IncidentsPage      = lazy(() => import('@/features/incidents/IncidentsPage'));
+const SubscriptionPage   = lazy(() => import('@/features/subscription/SubscriptionPage'));
+const NotificationsPage  = lazy(() => import('@/features/notifications/NotificationsPage'));
+const AnalyticsPage      = lazy(() => import('@/features/analytics/AnalyticsPage'));
+const ProfilePage        = lazy(() => import('@/features/profile/ProfilePage'));
 
 export default function App() {
   const dispatch = useDispatch();
@@ -43,26 +44,23 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
-        {/* <Route path="/track/:sosId" element={<TrackSOSPage />} /> */}
+        <Route path="/track/:sosId" element={<TrackSOSPage />} />
 
-        {/* <Route element={<ProtectedRoute />}>
+        {/* <Route element={<ProtectedRoute />}> */}
           <Route element={<AppLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/sos" element={<SOSPage />} />
-            <Route path="/tracking" element={<TrackingPage />} />
             <Route path="/contacts" element={<ContactsPage />} />
-            <Route path="/incidents" element={<IncidentsPage />} />
+            <Route path="/tracking" element={<TrackingPage />} />
             <Route path="/zones" element={<ZonesPage />} />
+            <Route path="/incidents" element={<IncidentsPage />} />
             <Route path="/subscription" element={<SubscriptionPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} /> 
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
-        </Route> */}
-        
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/sos" element={<SOSPage />} />
+        {/* </Route> */}
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

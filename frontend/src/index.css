@@ -43,7 +43,7 @@
 
   /* ── Glassmorphism (~80% of surfaces: cards, dashboard, navbar, AI/analytics/history panels) ── */
   .glass-panel {
-    @apply bg-white/60 backdrop-blur-xl border border-white/50 shadow-glass;
+    @apply bg-white/60 backdrop-blur-2xl border border-white/50 shadow-glass;
   }
   .glass-card {
     @apply glass-panel rounded-2xl p-6;
@@ -71,3 +71,15 @@
   50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(242, 12, 99, 0); }
 }
 .sos-button { animation: sos-pulse 2s infinite; }
+
+.hide-scrollbar {
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

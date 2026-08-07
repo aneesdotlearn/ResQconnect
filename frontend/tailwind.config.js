@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
@@ -13,11 +14,13 @@ export default {
         accent: {
           50: '#FFF1F7',
           100: '#FFD9E9',
-          300: '#FF7BB0',
+          200: '#ffb3cd',
+          300: '#ff62a1',
           400: '#FD2264',
           500: '#F20C63',
           600: '#FF2E7E',
           700: '#C4094F',
+          800: '#46001f',
         },
         charcoal: '#111827',
         'text-secondary': '#D1D5DB',
@@ -28,15 +31,15 @@ export default {
       },
       fontFamily: {
         sans: ['Sora', 'system-ui', 'sans-serif'],
-        display: ['Sora', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ['JetBrains Mono', 'monospace'],
+        mono: ['Sora', 'sans-serif'],
       },
       backgroundImage: {
         'dark-gradient': 'linear-gradient(180deg, #2A0013 0%, #0D0B10 100%)',
       },
       boxShadow: {
         glass: '0 8px 32px 0 rgba(17, 24, 39, 0.08)',
-        'neu-raised': '7px 7px 14px rgba(17, 24, 39, 0.12), -7px -7px 14px rgba(255, 255, 255, 0.9)',
+        'neu-raised': '14px 14px 28px rgba(17, 24, 39, 0.12), -7px -7px 14px rgba(255, 255, 255, 0.9)',
         'neu-pressed': 'inset 4px 4px 8px rgba(17, 24, 39, 0.15), inset -4px -4px 8px rgba(255, 255, 255, 0.8)',
         'neu-fab': '10px 10px 22px rgba(178, 15, 79, 0.35), -8px -8px 18px rgba(255, 255, 255, 0.7)',
       },

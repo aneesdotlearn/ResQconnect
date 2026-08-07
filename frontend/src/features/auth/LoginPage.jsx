@@ -44,14 +44,14 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-50">
+    <main className="relative min-h-screen overflow-hidden bg-slate-50 glass-card">
 
       {/* Background */}
       <div className="absolute inset-0 " />
 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,.18),transparent_45%)] " />
 
-      <section className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">
+      <section className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 ">
 
         <div className="grid w-full max-w-7xl overflow-hidden rounded-3xl bg-white/10 backdrop-blur-xl shadow-4xl lg:grid-cols-[1.15fr_.85fr]">
 
@@ -192,7 +192,7 @@ export default function LoginPage() {
 
           {/* RIGHT PANEL */}
 
-          <div className="relative bg-white p-8 md:p-12">
+          <div className="relative bg-white p-8 md:p-12 shadow-4xl flex flex-col justify-center">
 
             <div className="absolute left-0 top-0 h-48 w-48 rounded-full bg-accent-100 blur-3xl" />
 

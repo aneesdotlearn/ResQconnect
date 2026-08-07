@@ -213,7 +213,7 @@ function ErrorBanner({ message, onRetry }) {
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
 const QUICK_ACTIONS = [
-  { to: '/sos',       icon: AlertTriangle, label: 'Trigger SOS',  color: 'bg-accent-500 hover:bg-accent-600 text-white shadow-lg shadow-accent-500/30' },
+  { to: '/sos',       icon: AlertTriangle, label: 'Trigger SOS',  color: 'bg-gradient-to-r from-accent-700 to-accent-400 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-accent-800' },
   { to: '/contacts',  icon: Users,         label: 'Contacts',     color: 'bg-blue-100 hover:bg-blue-200 text-blue-700' },
   { to: '/zones',     icon: Shield,        label: 'Safe Zones',   color: 'bg-green-100 hover:bg-green-200 text-success-500' },
   { to: '/incidents', icon: FileText,      label: 'Report',       color: 'bg-orange-100 hover:bg-orange-200 text-warn-500' },
@@ -272,23 +272,12 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="
-      relative
-      min-h-screen
-      overflow-hidden
-      space-y-8
-      p-8
-
-      bg-gradient-to-br
-      from-accent-50
-      via-base
-      to-accent-100
-      ">
+       <div className="space-y-6 animate-fade-in">
             <div className="
-    absolute inset-0
-
-    bg-[radial-gradient(circle_at_20%_20%,rgba(242,12,99,.15),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,123,176,.18),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(255,217,233,.5),transparent_15%)]
-    " />
+            absolute inset-0
+            z-[-1]
+            bg-[radial-gradient(circle_at_20%_20%,rgba(242,12,99,.15),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,123,176,.18),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(255,217,233,.5),transparent_15%)]
+            " />
 
           {/* <div className="
           absolute
@@ -309,11 +298,11 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display font-bold text-2xl text-charcoal">
-            {greeting}, {user?.name?.split(' ')[0] ?? 'there'} 👋
+            {greeting}, {user?.name?.split(' ')[0] ?? 'there'}
           </h1>
           <p className="text-charcoal/60 text-sm mt-0.5">
             {activeAlert
-              ? <span className="text-error-600 font-semibold animate-pulse">🚨 Active SOS alert in progress</span>
+              ? <span className="text-error-600 font-semibold animate-pulse">Active SOS alert in progress</span>
               : 'You are safe. Stay aware of your surroundings.'}
           </p>
         </div>
