@@ -18,6 +18,7 @@ const logger = require('./utils/logger');
 
 const authRoutes = require('./api/v1/auth/auth.routes');
 const contactsRoutes = require('./api/v1/contacts/contacts.routes');
+const zonesRoutes = require('./api/v1/zones/zones.routes');
 
 const app = express();
 
@@ -89,6 +90,7 @@ app.use('/api/v1/auth/', authRateLimiter);
 const V1 = '/api/v1';
 app.use(`${V1}/auth`, authRoutes);
 app.use(`${V1}/contacts`, contactsRoutes);
+app.use(`${V1}/zones`, zonesRoutes);
 
 // ─── Error Handling ───────────────────────────────────────────────────────────────
 app.use(notFound);
