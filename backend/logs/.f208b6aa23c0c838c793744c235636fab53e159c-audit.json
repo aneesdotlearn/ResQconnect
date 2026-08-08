@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\Vaizai Task\\projects\\ResQconnect\\backend\\logs\\.f208b6aa23c0c838c793744c235636fab53e159c-audit.json",
+    "files": [
+        {
+            "date": 1786175098103,
+            "name": "D:\\Vaizai Task\\projects\\ResQconnect\\backend\\logs\\combined-2026-08-08.log",
+            "hash": "c9942a752936da64d463d64182315cdbdf02dc17d8df71be6b1e0f9e93d98465"
+        }
+    ],
+    "hashType": "sha256"
+}
