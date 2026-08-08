@@ -32,4 +32,12 @@ const authRateLimiter = createLimiter({
   message: 'Too many authentication attempts. Please try again in 15 minutes.',
 });
 
-module.exports = { rateLimiter, authRateLimiter };
+// Deliberately generous — a real emergency shouldn't be rate-limited away;
+// this mainly guards against a stuck client retry-looping the endpoint.
+const sosRateLimiter = createLimiter({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  message: 'Too many SOS triggers. If this is an emergency, contact local services directly.',
+});
+
+module.exports = { rateLimiter, authRateLimiter, sosRateLimiter };
