@@ -6,7 +6,8 @@ require('express-async-errors');
 const http = require('http');
 const app = require('./app');
 const { connectDB } = require('./config/database');
-const { connectRedis } = require('./config/redis');
+const { connectRedis, getRedisClient } = require('./config/redis');
+const { initSocketIO } = require('./config/socket');
 const logger = require('./utils/logger');
 
 const PORT = process.env.PORT || 5000;
@@ -17,6 +18,7 @@ async function bootstrap() {
     await connectRedis();
 
     const server = http.createServer(app);
+    initSocketIO(server);
 
     server.listen(PORT, () => {
       logger.info(`ResQconnect API running on port ${PORT} [${process.env.NODE_ENV}]`);
@@ -26,7 +28,6 @@ async function bootstrap() {
       logger.info(`${signal} received. Graceful shutdown initiated.`);
       server.close(async () => {
         const mongoose = require('mongoose');
-        const { getRedisClient } = require('./config/redis');
         await mongoose.connection.close();
         const redis = getRedisClient();
         if (redis) await redis.quit();

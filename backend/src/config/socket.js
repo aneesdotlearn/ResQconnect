@@ -1,17 +1,91 @@
 'use strict';
 
+const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
-// Placeholder until the real Socket.IO server is wired into server.js.
-// Signatures match what the real implementation will expose, so no
-// caller needs to change when that step lands.
+let io = null;
 
-function emitToUser(userId, event, payload) {
-  logger.debug(`[socket stub] emitToUser(${userId}, ${event}) — no-op until Socket.IO is wired up`);
+function initSocketIO(server) {
+  io = new Server(server, {
+    cors: {
+      origin: (process.env.ALLOWED_ORIGINS || '').split(','),
+      methods: ['GET', 'POST'],
+      credentials: true,
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 20000,
+    pingInterval: 25000,
+    maxHttpBufferSize: 1e6,
+  });
+
+  // Auth middleware — authenticate when possible, otherwise allow through as
+  // anonymous (needed for the public /track/:sosId page, which has no login).
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(' ')[1];
+
+    if (!token || token === 'public') {
+      socket.user = null;
+      return next();
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.user = decoded;
+      next();
+    } catch {
+      // Invalid/expired token — still allow the connection as anonymous
+      // rather than rejecting outright, since public tracking needs to work
+      // even if a stale token happens to be present.
+      socket.user = null;
+      next();
+    }
+  });
+
+  io.on('connection', (socket) => {
+    const userId = socket.user?.id;
+
+    if (userId) {
+      socket.join(`user:${userId}`);
+      logger.info(`Socket connected (authenticated): ${userId}`);
+    } else {
+      logger.info(`Socket connected (anonymous): ${socket.id}`);
+    }
+
+    socket.on('join:zone', (zoneId) => {
+      socket.join(`zone:${zoneId}`);
+    });
+
+    socket.on('leave:zone', (zoneId) => {
+      socket.leave(`zone:${zoneId}`);
+    });
+
+    socket.on('disconnect', () => {
+      logger.info(`Socket disconnected: ${userId || socket.id}`);
+    });
+  });
+
+  return io;
 }
 
-function emitToZone(zone, event, payload) {
-  logger.debug(`[socket stub] emitToZone(${zone}, ${event}) — no-op until Socket.IO is wired up`);
+function getIO() {
+  if (!io) throw new Error('Socket.IO not initialized');
+  return io;
 }
 
-module.exports = { emitToUser, emitToZone };
+function emitToUser(userId, event, data) {
+  if (!io) return;
+  io.to(`user:${userId}`).emit(event, data);
+}
+
+function emitToZone(zoneId, event, data) {
+  if (!io) return;
+  io.to(`zone:${zoneId}`).emit(event, data);
+}
+
+function broadcastEvent(event, data) {
+  if (!io) return;
+  io.emit(event, data);
+}
+
+module.exports = { initSocketIO, getIO, emitToUser, emitToZone, broadcastEvent };
