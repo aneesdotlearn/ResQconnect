@@ -1,52 +1,34 @@
 'use strict';
 
-const SOS = require('../models/SOS');
+const { extractFeatures } = require('./ml/featureExtractor');
+const mlModelAdapter = require('./ml/mlModelAdapter');
 const logger = require('../utils/logger');
 
 /**
  * aiRiskAnalysis()
  * ----------------
- * Simplified rule-based risk scorer. Produces real, varying scores from
- * genuine signals (time of day, trigger method, recent SOS frequency) —
- * this is NOT a placeholder returning a fixed number.
+ * Public entry point called by sos.controller.js. Same signature as the
+ * simplified Step 8 version — nothing calling this needed to change.
  *
- * The full pipeline (feature extraction across location history + an
- * external ML model with this as its fallback) is a larger separate
- * piece — this function's signature won't change when that lands, so
- * nothing calling it needs to be touched later.
+ * Flow:
+ *   1. extractFeatures() -> queries MongoDB for all signals, normalises them
+ *   2. mlModelAdapter.predict() -> calls ML REST endpoint (or rule-based fallback)
+ *   3. Returns { score, level, factors, confidence, model }
  */
 async function aiRiskAnalysis({ userId, coordinates, time = new Date() }) {
-  const factors = [];
-  let score = 30; // baseline
+  const { features, raw } = await extractFeatures({ userId, coordinates, time });
+  const result = await mlModelAdapter.predict(features, raw);
 
-  const hour = time.getHours();
-  if (hour >= 22 || hour < 5) {
-    score += 25;
-    factors.push('late night');
-  } else if (hour >= 18) {
-    score += 10;
-    factors.push('evening hours');
-  }
-
-  const recentCount = await SOS.countDocuments({
-    user: userId,
-    createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+  logger.info('Risk analysis complete', {
+    userId, coordinates, score: result.score, model: result.model, confidence: result.confidence,
   });
-  if (recentCount >= 1) {
-    score += Math.min(recentCount * 15, 30);
-    factors.push('repeat alert within 24h');
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  logger.info('Risk analysis complete', { userId, coordinates, score, model: 'rule-based-v1' });
 
   return {
-    score,
-    level: getRiskLevel(score),
-    factors,
-    confidence: 0.6, // rule-based confidence is fixed/moderate, unlike a real model's per-prediction confidence
-    model: 'rule-based-v1',
+    score: result.score,
+    level: getRiskLevel(result.score),
+    factors: result.factors,
+    confidence: result.confidence,
+    model: result.model,
   };
 }
 

@@ -20,6 +20,7 @@ const authRoutes = require('./api/v1/auth/auth.routes');
 const contactsRoutes = require('./api/v1/contacts/contacts.routes');
 const zonesRoutes = require('./api/v1/zones/zones.routes');
 const sosRoutes = require('./api/v1/sos/sos.routes');
+const incidentsRoutes = require('./api/v1/incidents/incidents.routes');
 
 const app = express();
 
@@ -93,6 +94,7 @@ app.use(`${V1}/auth`, authRoutes);
 app.use(`${V1}/contacts`, contactsRoutes);
 app.use(`${V1}/zones`, zonesRoutes);
 app.use(`${V1}/sos`, sosRoutes);
+app.use(`${V1}/incidents`, incidentsRoutes);
 
 // ─── Error Handling ───────────────────────────────────────────────────────────────
 app.use(notFound);
