@@ -17,6 +17,7 @@ const { requestLogger } = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 
 const authRoutes = require('./api/v1/auth/auth.routes');
+const contactsRoutes = require('./api/v1/contacts/contacts.routes');
 
 const app = express();
 
@@ -87,6 +88,7 @@ app.use('/api/v1/auth/', authRateLimiter);
 // ─── REST API Routes ─────────────────────────────────────────────────────────────
 const V1 = '/api/v1';
 app.use(`${V1}/auth`, authRoutes);
+app.use(`${V1}/contacts`, contactsRoutes);
 
 // ─── Error Handling ───────────────────────────────────────────────────────────────
 app.use(notFound);
