@@ -22,6 +22,8 @@ const zonesRoutes = require('./api/v1/zones/zones.routes');
 const sosRoutes = require('./api/v1/sos/sos.routes');
 const incidentsRoutes = require('./api/v1/incidents/incidents.routes');
 const notificationsRoutes = require('./api/v1/notifications/notifications.routes');
+const subscriptionsRoutes = require('./api/v1/subscriptions/subscriptions.routes');
+const { stripeWebhook } = require('./api/v1/subscriptions/subscriptions.controller');
 
 const app = express();
 
@@ -58,6 +60,11 @@ app.use(helmet({
 // ─── CORS ───────────────────────────────────────────────────────────────────────
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// ─── Stripe Webhook — MUST be registered with the raw body parser, and MUST
+// come before the global express.json() below, or signature verification
+// will always fail (req.body would already be a parsed object, not a Buffer).
+app.post('/api/v1/subscriptions/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 // ─── Body Parsing ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
@@ -97,6 +104,7 @@ app.use(`${V1}/zones`, zonesRoutes);
 app.use(`${V1}/sos`, sosRoutes);
 app.use(`${V1}/incidents`, incidentsRoutes);
 app.use(`${V1}/notifications`, notificationsRoutes);
+app.use(`${V1}/subscriptions`, subscriptionsRoutes);
 
 // ─── Error Handling ───────────────────────────────────────────────────────────────
 app.use(notFound);
