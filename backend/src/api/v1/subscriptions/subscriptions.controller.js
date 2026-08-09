@@ -95,14 +95,15 @@ exports.verifyRazorpayPayment = async (req, res, next) => {
 
 exports.razorpayWebhook = async (req, res) => {
   const signature = req.headers['x-razorpay-signature'];
-  const body = JSON.stringify(req.body);
-  const expectedSig = crypto.createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET).update(body).digest('hex');
+  const rawBody = req.body; // Buffer, thanks to express.raw() above — not pre-parsed JSON
+  const expectedSig = crypto.createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET).update(rawBody).digest('hex');
 
   if (signature !== expectedSig) return res.status(400).json({ status: 'fail', message: 'Invalid signature' });
 
-  const { event, payload } = req.body;
+  const payload = JSON.parse(rawBody.toString('utf8'));
+  const { event, payload: eventPayload } = payload;
   if (event === 'subscription.cancelled') {
-    const subId = payload.subscription?.entity?.id;
+    const subId = eventPayload.subscription?.entity?.id;
     if (subId) {
       await User.findOneAndUpdate(
         { 'subscription.razorpaySubscriptionId': subId },

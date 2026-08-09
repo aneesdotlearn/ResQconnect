@@ -146,7 +146,7 @@ exports.getSOSHistory = async (req, res) => {
 };
 
 exports.getActiveSOSForContact = async (req, res, next) => {
-  const sos = await SOS.findById(req.params.sosId)
+  const sos = await SOS.findOne({ shareToken: req.params.shareToken })
     .select('location locationHistory status createdAt user aiRiskScore aiLevel')
     .populate('user', 'name phone avatar')
     .lean();

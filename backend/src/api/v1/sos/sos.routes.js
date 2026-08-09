@@ -13,7 +13,9 @@ const coordsValidator = [
 ];
 
 // Public route — no auth required so emergency contacts can view the tracking page
-router.get('/track/:sosId', validate([param('sosId').isMongoId()]), ctrl.getActiveSOSForContact);
+router.get('/track/:shareToken', validate([
+  param('shareToken').isHexadecimal().isLength({ min: 48, max: 48 }),
+]), ctrl.getActiveSOSForContact);
 
 router.use(protect);
 

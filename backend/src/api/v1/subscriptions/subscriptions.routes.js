@@ -12,7 +12,7 @@ const VALID_PLANS = ['basic', 'premium', 'enterprise'];
 // Note: the Stripe webhook route lives in app.js, not here — it needs the
 // raw request body for signature verification, which must be captured
 // BEFORE the global express.json() parser runs. See app.js for details.
-router.post('/razorpay/webhook', ctrl.razorpayWebhook);
+// router.post('/razorpay/webhook', ctrl.razorpayWebhook);
 
 router.use(protect);
 

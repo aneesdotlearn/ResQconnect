@@ -26,6 +26,7 @@ const notificationsRoutes = require('./api/v1/notifications/notifications.routes
 const subscriptionsRoutes = require('./api/v1/subscriptions/subscriptions.routes');
 const { stripeWebhook } = require('./api/v1/subscriptions/subscriptions.controller');
 const analyticsRoutes = require('./api/v1/analytics/analytics.routes');
+const { razorpayWebhook } = require('./api/v1/subscriptions/subscriptions.controller');
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.options('*', cors(corsOptions));
 
 // ─── Stripe Webhook — before global JSON parser (needs the raw body) ────────────
 app.post('/api/v1/subscriptions/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
+app.post('/api/v1/subscriptions/razorpay/webhook', express.raw({ type: 'application/json' }), razorpayWebhook);
 
 // ─── Body Parsing ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
@@ -91,6 +93,10 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV,
   });
 });
+
+if (process.env.TRUST_PROXY) {
+  app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1);
+}
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────────
 app.use('/api/', rateLimiter);
