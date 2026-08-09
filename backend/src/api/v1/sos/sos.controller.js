@@ -80,6 +80,7 @@ exports.triggerSOS = async (req, res, next) => {
     message: 'SOS alert triggered',
     data: {
       sosId: sos._id,
+      shareToken: sos.shareToken,
       notifiedContacts: contacts.length,
       aiRiskScore: risk.score, aiRiskFactors: risk.factors, aiConfidence: risk.confidence,
       aiLevel: risk.level, aiModel: risk.model,

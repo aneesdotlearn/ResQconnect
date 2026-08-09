@@ -3,6 +3,7 @@
 const Razorpay = require('razorpay');
 const Stripe = require('stripe');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const PDFDocument = require('pdfkit');
 const User = require('../../../models/User');
 const { Transaction } = require('../../../models/index');
@@ -66,11 +67,18 @@ exports.verifyRazorpayPayment = async (req, res, next) => {
 
   const userId = req.user._id || req.user.id;
 
+  // txId is already constrained to a Mongo ObjectId by body('txId').isMongoId()
+  // at the route level — this explicit re-check is the sanitizing guard right
+  // at the query call itself, so the value can never reach the filter unvalidated.
+  if (!mongoose.Types.ObjectId.isValid(txId)) {
+    return next(new AppError('Invalid transaction ID', 400, 'INVALID_TX_ID'));
+  }
+
   // Scope the update to a transaction owned by the caller — txId is client-supplied,
   // so without this filter a valid signature on the requester's own order could be
   // used to mark an arbitrary (someone else's) transaction as completed.
   const tx = await Transaction.findOneAndUpdate(
-    { _id: txId, user: userId },
+    { _id: new mongoose.Types.ObjectId(txId), user: userId },
     { $set: { status: 'completed', gatewayPaymentId: razorpay_payment_id, gatewaySignature: razorpay_signature } },
     { new: true }
   );
