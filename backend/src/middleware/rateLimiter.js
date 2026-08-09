@@ -1,6 +1,7 @@
 'use strict';
 
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
 const createLimiter = (options) =>
   rateLimit({
@@ -9,7 +10,7 @@ const createLimiter = (options) =>
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: options.skipSuccessful || false,
-    keyGenerator: (req) => req.user?.id || req.ip,
+    keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip),
     handler: (req, res) => {
       res.status(429).json({
         status: 'fail',

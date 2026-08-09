@@ -6,9 +6,7 @@ const AppError = require('../../../utils/AppError');
 const { emitToUser, emitToZone } = require('../../../config/socket');
 const { aiRiskAnalysis } = require('../../../services/ai.service');
 const { reverseGeocode } = require('../../../services/location.service');
-const { sendSMS } = require('../../../services/sms.service');
-const { sendEmail } = require('../../../services/email.service');
-// const { createInAppNotification } = require('../../../services/notification.service');
+const { addSMSJob, addEmailJob, addNotificationJob } = require('../../../queues');
 const logger = require('../../../utils/logger');
 
 exports.triggerSOS = async (req, res, next) => {
@@ -42,21 +40,21 @@ exports.triggerSOS = async (req, res, next) => {
   const contacts = await Contact.find({ user: userId, 'notifyOn.sos': true })
     .sort({ priority: 1 }).limit(5).lean();
 
-  const trackUrl = `${process.env.CLIENT_URL}/track/${sos._id}`;
+  const trackUrl = `${process.env.CLIENT_URL}/track/${sos.shareToken}`;
   const notifiedContacts = [];
 
   for (const contact of contacts) {
-    sendSMS({
+    addSMSJob({
       to: contact.phone,
       message: `EMERGENCY: ${req.user.name} triggered SOS at ${address || `${coordinates[1]}, ${coordinates[0]}`}. Track: ${trackUrl}`,
-    }).catch((e) => logger.error(`SOS SMS failed for contact ${contact._id}:`, e.message));
+    }).catch((e) => logger.error(`SOS SMS job enqueue failed for contact ${contact._id}:`, e.message));
 
     if (contact.email) {
-      sendEmail({
+      addEmailJob({
         to: contact.email,
         template: 'sos-alert',
         data: { contactName: contact.name, userName: req.user.name, address, coordinates, sosId: sos._id, trackUrl },
-      }).catch((e) => logger.error(`SOS email failed for contact ${contact._id}:`, e.message));
+      }).catch((e) => logger.error(`SOS email job enqueue failed for contact ${contact._id}:`, e.message));
     }
     notifiedContacts.push({ contact: contact._id, notifiedAt: new Date(), method: 'sms', status: 'sent' });
   }
@@ -69,13 +67,13 @@ exports.triggerSOS = async (req, res, next) => {
     aiLevel: risk.level, aiModel: risk.model,
   });
 
-//   createInAppNotification({
-//     userId,
-//     title: 'SOS Alert Sent',
-//     body: `Emergency alert sent to ${contacts.length} contact(s) - Risk: ${risk.score}/100 (${risk.level})`,
-//     type: 'sos',
-//     data: { sosId: sos._id },
-//   }).catch((e) => logger.error('In-app notification failed:', e.message));
+  addNotificationJob({
+    userId,
+    title: 'SOS Alert Sent',
+    body: `Emergency alert sent to ${contacts.length} contact(s) - Risk: ${risk.score}/100 (${risk.level})`,
+    type: 'sos',
+    data: { sosId: sos._id },
+  }).catch((e) => logger.error('SOS notification job enqueue failed:', e.message));
 
   res.status(201).json({
     status: 'success',

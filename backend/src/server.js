@@ -8,6 +8,10 @@ const app = require('./app');
 const { connectDB } = require('./config/database');
 const { connectRedis, getRedisClient } = require('./config/redis');
 const { initSocketIO } = require('./config/socket');
+const { initQueues, closeQueues } = require('./queues');
+const { initGraphQL } = require('./graphql');
+const { errorHandler } = require('./middleware/errorHandler');
+const { notFound } = require('./middleware/notFound');
 const logger = require('./utils/logger');
 
 const PORT = process.env.PORT || 5000;
@@ -16,9 +20,14 @@ async function bootstrap() {
   try {
     await connectDB();
     await connectRedis();
+    await initGraphQL(app);
+
+    app.use(notFound);
+    app.use(errorHandler);
 
     const server = http.createServer(app);
     initSocketIO(server);
+    initQueues();
 
     server.listen(PORT, () => {
       logger.info(`ResQconnect API running on port ${PORT} [${process.env.NODE_ENV}]`);
@@ -28,6 +37,7 @@ async function bootstrap() {
       logger.info(`${signal} received. Graceful shutdown initiated.`);
       server.close(async () => {
         const mongoose = require('mongoose');
+        await closeQueues();
         await mongoose.connection.close();
         const redis = getRedisClient();
         if (redis) await redis.quit();

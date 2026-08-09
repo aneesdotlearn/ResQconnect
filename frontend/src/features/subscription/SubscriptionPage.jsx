@@ -316,6 +316,11 @@ export default function SubscriptionPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      <div className="
+            absolute inset-0
+            z-[-1]
+            bg-[radial-gradient(circle_at_20%_20%,rgba(242,12,99,.15),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,123,176,.18),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(255,217,233,.5),transparent_15%)]  
+            " />
       <div>
         <h1 className="font-display font-bold text-2xl text-charcoal">Subscription</h1>
         <p className="text-charcoal/60 text-sm mt-0.5">Choose a plan that keeps you safe</p>

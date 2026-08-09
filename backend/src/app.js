@@ -8,11 +8,12 @@ const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const locationRoutes = require('./api/v1/location/location.routes');
 
 const { corsOptions } = require('./config/cors');
 const { rateLimiter, authRateLimiter } = require('./middleware/rateLimiter');
-const { errorHandler } = require('./middleware/errorHandler');
-const { notFound } = require('./middleware/notFound');
+// const { errorHandler } = require('./middleware/errorHandler');
+// const { notFound } = require('./middleware/notFound');
 const { requestLogger } = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 
@@ -24,6 +25,7 @@ const incidentsRoutes = require('./api/v1/incidents/incidents.routes');
 const notificationsRoutes = require('./api/v1/notifications/notifications.routes');
 const subscriptionsRoutes = require('./api/v1/subscriptions/subscriptions.routes');
 const { stripeWebhook } = require('./api/v1/subscriptions/subscriptions.controller');
+const analyticsRoutes = require('./api/v1/analytics/analytics.routes');
 
 const app = express();
 
@@ -61,9 +63,7 @@ app.use(helmet({
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// ─── Stripe Webhook — MUST be registered with the raw body parser, and MUST
-// come before the global express.json() below, or signature verification
-// will always fail (req.body would already be a parsed object, not a Buffer).
+// ─── Stripe Webhook — before global JSON parser (needs the raw body) ────────────
 app.post('/api/v1/subscriptions/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 // ─── Body Parsing ───────────────────────────────────────────────────────────────
@@ -97,6 +97,9 @@ app.use('/api/', rateLimiter);
 app.use('/api/v1/auth/', authRateLimiter);
 
 // ─── REST API Routes ─────────────────────────────────────────────────────────────
+// GraphQL is mounted separately in server.js (async — see graphql/index.js),
+// since Apollo Server requires `await server.start()` before applying its
+// Express middleware, which app.js's synchronous factory can't do.
 const V1 = '/api/v1';
 app.use(`${V1}/auth`, authRoutes);
 app.use(`${V1}/contacts`, contactsRoutes);
@@ -105,9 +108,11 @@ app.use(`${V1}/sos`, sosRoutes);
 app.use(`${V1}/incidents`, incidentsRoutes);
 app.use(`${V1}/notifications`, notificationsRoutes);
 app.use(`${V1}/subscriptions`, subscriptionsRoutes);
+app.use(`${V1}/analytics`, analyticsRoutes);
+app.use(`${V1}/location`, locationRoutes);
 
-// ─── Error Handling ───────────────────────────────────────────────────────────────
-app.use(notFound);
-app.use(errorHandler);
+// // ─── Error Handling ───────────────────────────────────────────────────────────────
+// app.use(notFound);
+// app.use(errorHandler);
 
 module.exports = app;

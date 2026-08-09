@@ -11,6 +11,13 @@ const sosSchema = new mongoose.Schema(
       default: 'active',
       index: true,
     },
+    shareToken: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+      default: () => require('crypto').randomBytes(24).toString('hex'), // 48-char random token
+    },
     triggerMethod: {
       type: String,
       enum: ['button', 'voice', 'shake', 'auto', 'admin'],

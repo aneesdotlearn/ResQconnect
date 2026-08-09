@@ -14,6 +14,23 @@ dist-ssr
 .env
 .env*
 !.env.example
+smoke-test.sh
+npm-debug.log*
+npm-audit.json
+
+
+# Logs
+logs/
+*.log
+
+# Backend-specific logs
+backend/log/
+backend/logs/
+
+# Runtime/generated files
+coverage/
+.tmp/
+temp/
 
 # Editor directories and files
 .vscode/*

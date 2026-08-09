@@ -7,7 +7,7 @@ const PDFDocument = require('pdfkit');
 const User = require('../../../models/User');
 const { Transaction } = require('../../../models/index');
 const AppError = require('../../../utils/AppError');
-// const { createInAppNotification } = require('../../../services/notification.service');
+const { addNotificationJob } = require('../../../queues');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -82,7 +82,7 @@ exports.verifyRazorpayPayment = async (req, res, next) => {
     },
   });
 
-  createInAppNotification({
+  addNotificationJob({
     userId,
     title: 'Subscription Activated',
     body: `Your ${PLANS[plan].name} subscription is now active!`,
@@ -242,4 +242,75 @@ exports.generateInvoice = async (req, res, next) => {
 exports.getSubscriptionStatus = async (req, res) => {
   const user = await User.findById(req.user._id || req.user.id).select('subscription wallet').lean();
   res.status(200).json({ status: 'success', data: { subscription: user.subscription, wallet: user.wallet } });
+};
+
+exports.createRazorpayOrder = async (req, res, next) => {
+  const { plan } = req.body;
+  if (!PLANS[plan]) return next(new AppError('Invalid plan', 400, 'INVALID_PLAN'));
+
+  const planConfig = PLANS[plan];
+
+  let order;
+  try {
+    order = await razorpay.orders.create({
+      amount: planConfig.price,
+      currency: planConfig.currency,
+      receipt: `rcpt_${Date.now()}`,
+      notes: { userId: (req.user._id || req.user.id).toString(), plan },
+    });
+  } catch (err) {
+    return next(new AppError(`Razorpay error: ${err.error?.description || err.message}`, 502, 'RAZORPAY_ERROR'));
+  }
+
+  const tx = await Transaction.create({
+    user: req.user._id || req.user.id,
+    type: 'subscription',
+    amount: planConfig.price / 100,
+    currency: planConfig.currency,
+    status: 'pending',
+    gateway: 'razorpay',
+    gatewayOrderId: order.id,
+    description: `${planConfig.name} subscription`,
+    metadata: { plan },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { orderId: order.id, amount: order.amount, currency: order.currency, key: process.env.RAZORPAY_KEY_ID, txId: tx._id },
+  });
+};
+
+exports.createStripeSession = async (req, res, next) => {
+  const { plan } = req.body;
+  if (!PLANS[plan]) return next(new AppError('Invalid plan', 400, 'INVALID_PLAN'));
+  const userId = (req.user._id || req.user.id).toString();
+
+  if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('your-')) {
+    return next(new AppError('Stripe is not configured on this server (missing STRIPE_SECRET_KEY)', 503, 'STRIPE_NOT_CONFIGURED'));
+  }
+
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [{
+        price_data: {
+          currency: PLANS[plan].currency.toLowerCase(),
+          product_data: { name: PLANS[plan].name },
+          unit_amount: PLANS[plan].price,
+          recurring: { interval: PLANS[plan].interval },
+        },
+        quantity: 1,
+      }],
+      success_url: `${process.env.CLIENT_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/subscription/cancel`,
+      metadata: { userId, plan },
+      client_reference_id: userId,
+    });
+  } catch (err) {
+    return next(new AppError(`Stripe error: ${err.message}`, 502, 'STRIPE_ERROR'));
+  }
+
+  res.status(200).json({ status: 'success', data: { url: session.url, sessionId: session.id } });
 };
