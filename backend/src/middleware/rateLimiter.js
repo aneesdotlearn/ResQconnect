@@ -59,9 +59,21 @@ const paymentRateLimiter = createLimiter({
     'Too many payment attempts. Please try again in 10 minutes.',
 });
 
+// For the Stripe/Razorpay webhook endpoints specifically — these are called by
+// the gateway's own servers (often from a shared IP pool), not end users, so
+// they need a much higher ceiling than paymentRateLimiter's per-user limit.
+// This exists purely to cap abuse/DoS against the endpoint, not to throttle
+// legitimate gateway traffic or retries.
+const webhookRateLimiter = createLimiter({
+  windowMs: 5 * 60 * 1000,
+  max: 300,
+  message: 'Too many webhook requests.',
+});
+
 module.exports = {
   rateLimiter,
   authRateLimiter,
   sosRateLimiter,
   paymentRateLimiter,
+  webhookRateLimiter,
 };

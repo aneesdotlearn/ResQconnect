@@ -47,7 +47,10 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select('+password +loginAttempts +lockUntil');
+  // express-validator's isEmail() on the route already rejects non-string/object
+  // input, and mongoSanitize strips $-prefixed keys globally — this cast is an
+  // explicit, local guarantee that the query is always built from a plain string.
+  const user = await User.findOne({ email: String(email) }).select('+password +loginAttempts +lockUntil');
   if (!user) return next(new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS'));
 
   if (user.isLocked) {
@@ -159,7 +162,7 @@ exports.verifyEmail = async (req, res, next) => {
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: String(email) });
 
   // Always respond the same way — never reveal whether the email exists
   const genericResponse = { status: 'success', message: 'If that email exists, a reset link has been sent.' };

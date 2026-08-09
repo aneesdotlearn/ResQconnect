@@ -64,11 +64,18 @@ exports.verifyRazorpayPayment = async (req, res, next) => {
     return next(new AppError('Payment verification failed', 400, 'PAYMENT_VERIFICATION_FAILED'));
   }
 
-  const tx = await Transaction.findByIdAndUpdate(txId, {
-    $set: { status: 'completed', gatewayPaymentId: razorpay_payment_id, gatewaySignature: razorpay_signature },
-  }, { new: true });
-
   const userId = req.user._id || req.user.id;
+
+  // Scope the update to a transaction owned by the caller — txId is client-supplied,
+  // so without this filter a valid signature on the requester's own order could be
+  // used to mark an arbitrary (someone else's) transaction as completed.
+  const tx = await Transaction.findOneAndUpdate(
+    { _id: txId, user: userId },
+    { $set: { status: 'completed', gatewayPaymentId: razorpay_payment_id, gatewaySignature: razorpay_signature } },
+    { new: true }
+  );
+  if (!tx) return next(new AppError('Transaction not found', 404, 'NOT_FOUND'));
+
   const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + 1);
 
