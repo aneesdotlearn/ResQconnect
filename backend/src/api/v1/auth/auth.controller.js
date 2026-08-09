@@ -123,11 +123,12 @@ exports.getMe = async (req, res) => {
 };
 
 exports.updateMe = async (req, res, next) => {
-  const allowed = ['name', 'phone', 'avatar', 'sosSettings', 'notificationPreferences'];
   const updates = {};
-  for (const key of allowed) {
-    if (req.body[key] !== undefined) updates[key] = req.body[key];
-  }
+  if (req.body.name !== undefined) updates.name = req.body.name;
+  if (req.body.phone !== undefined) updates.phone = req.body.phone;
+  if (req.body.avatar !== undefined) updates.avatar = req.body.avatar;
+  if (req.body.sosSettings !== undefined) updates.sosSettings = req.body.sosSettings;
+  if (req.body.notificationPreferences !== undefined) updates.notificationPreferences = req.body.notificationPreferences;
 
   if (req.body.role || req.body.subscription) {
     return next(new AppError('Role and subscription cannot be updated via this endpoint', 403, 'FORBIDDEN_FIELD'));
