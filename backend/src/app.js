@@ -11,7 +11,8 @@ const morgan = require('morgan');
 const locationRoutes = require('./api/v1/location/location.routes');
 
 const { corsOptions } = require('./config/cors');
-const { rateLimiter, authRateLimiter } = require('./middleware/rateLimiter');
+const { rateLimiter, authRateLimiter, webhookRateLimiter } = require('./middleware/rateLimiter');
+const { getCsrfToken, verifyCsrfToken } = require('./middleware/csrf');
 // const { errorHandler } = require('./middleware/errorHandler');
 // const { notFound } = require('./middleware/notFound');
 const { requestLogger } = require('./middleware/requestLogger');
@@ -64,9 +65,11 @@ app.use(helmet({
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// ─── Stripe Webhook — before global JSON parser (needs the raw body) ────────────
-app.post('/api/v1/subscriptions/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
-app.post('/api/v1/subscriptions/razorpay/webhook', express.raw({ type: 'application/json' }), razorpayWebhook);
+// ─── Stripe/Razorpay Webhooks — before global JSON parser (needs the raw body) ──
+// These are registered before the global rate limiter (below), so they need
+// their own limiter here or they'd have none at all.
+app.post('/api/v1/subscriptions/stripe/webhook', webhookRateLimiter, express.raw({ type: 'application/json' }), stripeWebhook);
+app.post('/api/v1/subscriptions/razorpay/webhook', webhookRateLimiter, express.raw({ type: 'application/json' }), razorpayWebhook);
 
 // ─── Body Parsing ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
@@ -101,6 +104,15 @@ if (process.env.TRUST_PROXY) {
 // ─── Rate Limiting ───────────────────────────────────────────────────────────────
 app.use('/api/', rateLimiter);
 app.use('/api/v1/auth/', authRateLimiter);
+
+// ─── CSRF Protection ──────────────────────────────────────────────────────────────
+// access_token/refresh_token cookies are httpOnly + sameSite=strict, which already
+// blocks the cookie from being sent on cross-site requests in modern browsers.
+// This double-submit token is a defense-in-depth layer on top of that for
+// state-changing requests authenticated via cookie (as opposed to a Bearer header,
+// which cross-site pages can't attach anyway).
+app.get('/api/v1/csrf-token', getCsrfToken);
+app.use('/api/', verifyCsrfToken);
 
 // ─── REST API Routes ─────────────────────────────────────────────────────────────
 // GraphQL is mounted separately in server.js (async — see graphql/index.js),

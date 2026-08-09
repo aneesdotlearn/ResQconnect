@@ -31,7 +31,12 @@ router.get('/:id', validate([param('id').isMongoId()]), ctrl.getIncident);
 router.patch('/:id', validate([param('id').isMongoId()]), ctrl.updateIncident);
 
 // Admin routes
-router.get('/admin/all', restrictTo('admin', 'moderator'), ctrl.adminGetIncidents);
+router.get('/admin/all', restrictTo('admin', 'moderator'), validate([
+  query('status').optional().isIn(['open', 'under_review', 'resolved', 'closed']),
+  query('severity').optional().isIn(['low', 'medium', 'high', 'critical']),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 200 }),
+]), ctrl.adminGetIncidents);
 router.patch('/admin/:id', restrictTo('admin', 'moderator'), validate([param('id').isMongoId()]), ctrl.adminUpdateIncident);
 
 module.exports = router;
