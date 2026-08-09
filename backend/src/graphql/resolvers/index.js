@@ -1,7 +1,11 @@
 'use strict';
 
-const { AuthenticationError } = require('apollo-server-express');
-const { GraphQLScalarType, Kind } = require('graphql');
+const {
+  GraphQLScalarType,
+  GraphQLError,
+  Kind,
+} = require('graphql');
+
 const mongoose = require('mongoose');
 const { verifyAccessToken } = require('../../utils/jwt');
 const User = require('../../models/User');
@@ -9,12 +13,26 @@ const SOS = require('../../models/SOS');
 const { Incident, Contact, SafeZone, Notification } = require('../../models/index');
 
 function getUser(ctx) {
-  const token = ctx.req.headers.authorization?.split(' ')[1] || ctx.req.cookies?.access_token;
-  if (!token) throw new AuthenticationError('Authentication required');
+  const token =
+    ctx.req.headers.authorization?.split(' ')[1] ||
+    ctx.req.cookies?.access_token;
+
+  if (!token) {
+    throw new GraphQLError('Authentication required', {
+      extensions: {
+        code: 'UNAUTHENTICATED',
+      },
+    });
+  }
+
   try {
     return verifyAccessToken(token);
   } catch {
-    throw new AuthenticationError('Invalid token');
+    throw new GraphQLError('Invalid token', {
+      extensions: {
+        code: 'UNAUTHENTICATED',
+      },
+    });
   }
 }
 
