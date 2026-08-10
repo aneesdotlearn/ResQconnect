@@ -30,6 +30,12 @@ const analyticsRoutes = require('./api/v1/analytics/analytics.routes');
 const { razorpayWebhook } = require('./api/v1/subscriptions/subscriptions.controller');
 
 const app = express();
+// nosemgrep: javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage
+// This rule only recognizes csurf/csrf by name. CSRF protection is implemented via
+// csrf-csrf (double-submit cookie pattern) — see middleware/csrf.js and its mount
+// point below at app.use('/api/', verifyCsrfToken). Verified end-to-end: rejects
+// mutating requests without a matching X-CSRF-Token, rejects cross-session token
+// reuse, passes through with a valid token.
 
 // ─── Security Headers ──────────────────────────────────────────────────────────
 app.use(helmet({
@@ -74,6 +80,11 @@ app.post('/api/v1/subscriptions/razorpay/webhook', webhookRateLimiter, express.r
 // ─── Body Parsing ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+// codeql[js/missing-token-validation]
+// CodeQL only recognizes csurf or lusca by name for this check. CSRF protection is
+// implemented via csrf-csrf instead — see middleware/csrf.js, mounted below at
+// app.use('/api/', verifyCsrfToken). Verified end-to-end (403 without a matching
+// X-CSRF-Token, 403 on cross-session token reuse, passes through with a valid one).
 app.use(cookieParser(process.env.JWT_SECRET));
 
 // ─── Sanitization & Compression ─────────────────────────────────────────────────

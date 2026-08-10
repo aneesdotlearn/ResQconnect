@@ -43,6 +43,10 @@ exports.getIncident = async (req, res, next) => {
 exports.updateIncident = async (req, res, next) => {
   const allowed = ['title', 'description', 'type', 'severity', 'isAnonymous'];
   const updates = {};
+  // nosemgrep: javascript.express.security.audit.remote-property-injection.remote-property-injection
+  // `f` iterates over the hardcoded `allowed` array above, never user input — this
+  // is the field-whitelist pattern, not a property-injection risk. req.body[f]
+  // only ever reads one of the 5 literal keys in `allowed`.
   allowed.forEach((f) => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
   const incident = await Incident.findOneAndUpdate(

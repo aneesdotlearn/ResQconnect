@@ -58,6 +58,10 @@ exports.registerFCMToken = async (req, res) => {
 exports.updatePreferences = async (req, res) => {
   const allowed = ['email', 'sms', 'push', 'sosAlerts', 'zoneAlerts', 'incidentAlerts'];
   const updates = {};
+  // nosemgrep: javascript.express.security.audit.remote-property-injection.remote-property-injection
+  // `k` iterates over the hardcoded `allowed` array above, never user input — this
+  // is the field-whitelist pattern, not a property-injection risk. req.body[k]
+  // only ever reads one of the 6 literal keys in `allowed`.
   allowed.forEach((k) => { if (req.body[k] !== undefined) updates[`notificationPreferences.${k}`] = req.body[k]; });
   const user = await User.findByIdAndUpdate(req.user._id || req.user.id, { $set: updates }, { new: true }).select('notificationPreferences').lean();
   await cacheDel(`user:${user._id}`);

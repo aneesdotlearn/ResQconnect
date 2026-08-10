@@ -31,6 +31,9 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
+    httpOnly: true, // explicit even though it's csrf-csrf's own default — the token
+    // is only ever read from the /csrf-token JSON response body, never from the
+    // cookie via client JS, so there's no reason to relax this.
   },
   getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'],
   skipCsrfProtection: (req) =>
